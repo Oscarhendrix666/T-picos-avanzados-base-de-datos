@@ -59,7 +59,7 @@ CREATE TABLE Registro_CheckIn (
     FOREIGN KEY (id_vuelo) REFERENCES Vuelo(id_vuelo) ON DELETE CASCADE
 );
 
--- Tabla de Equipaje (opcional)
+-- Tabla de Equipaje
 CREATE TABLE Equipaje (
     id_equipaje INT PRIMARY KEY,
     rut_pasajero VARCHAR(10),
@@ -79,7 +79,7 @@ DECLARE
     cantidad_pasaporte INT DEFAULT 0;
     error_pasaporte_duplicado EXCEPTION;
 BEGIN
-    -- Verifica si el pasaporte ya est· registrado
+    -- Verifica si el pasaporte ya est√° registrado
     SELECT COUNT(*)
     INTO cantidad_pasaporte
     FROM Pasajero
@@ -90,7 +90,7 @@ BEGIN
     END IF;
 EXCEPTION
     WHEN error_pasaporte_duplicado THEN
-        RAISE_APPLICATION_ERROR(-20005, 'El pasaporte ya est· registrado');
+        RAISE_APPLICATION_ERROR(-20005, 'El pasaporte ya est√° registrado');
 END;
 
 
@@ -106,7 +106,7 @@ BEGIN
     END IF;
 EXCEPTION
     WHEN error_peso THEN
-        RAISE_APPLICATION_ERROR(-20003, 'El peso del equipaje excede el lÌmite permitido de 23 kg');
+        RAISE_APPLICATION_ERROR(-20003, 'El peso del equipaje excede el l√≠mite permitido de 23 kg');
 END;
 
 
@@ -147,7 +147,7 @@ EXCEPTION
     WHEN error_formato THEN
         RAISE_APPLICATION_ERROR(-20001, 'El RUT debe estar en el formato 12345678-k o 12345678-9');
     WHEN error_duplicado THEN
-        RAISE_APPLICATION_ERROR(-20002, 'El pasaporte ya est· registrado');
+        RAISE_APPLICATION_ERROR(-20002, 'El pasaporte ya est√° registrado');
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20000, 'Error inesperado al insertar el pasajero');
@@ -227,7 +227,7 @@ BEGIN
     COMMIT;
 EXCEPTION
     WHEN error_peso THEN
-        RAISE_APPLICATION_ERROR(-20003, 'El peso del equipaje excede el lÌmite permitido de 23 kg');
+        RAISE_APPLICATION_ERROR(-20003, 'El peso del equipaje excede el l√≠mite permitido de 23 kg');
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20000, 'Error inesperado al registrar el equipaje');
@@ -254,7 +254,7 @@ CREATE PROCEDURE EliminarPasaje (
 IS
     error_pasaje_no_existe EXCEPTION;
 BEGIN
-    -- Inicia una transacciÛn
+    -- Inicia una transacci√≥n
     START TRANSACTION;
 
     -- Verifica si el pasaje existe
@@ -264,7 +264,7 @@ BEGIN
         RAISE error_pasaje_no_existe;
     END IF;
 
-    -- Confirma la transacciÛn si no hay errores
+    -- Confirma la transacci√≥n si no hay errores
     COMMIT;
 EXCEPTION
     WHEN error_pasaje_no_existe THEN
