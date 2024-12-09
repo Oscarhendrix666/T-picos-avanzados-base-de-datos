@@ -29,6 +29,18 @@ function insertarEquipaje($id_reserva, $tipo, $peso) {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'agregar') {
+    $id_reserva= isset($_POST['id_reserva']) ? $_POST['id_reservaa'] : null;
+    $tipo = isset($_POST['tipo']) ? $_POST['tipo'] : null;
+    $peso = isset($_POST['peso']) ? $_POST['peso'] : null;
+
+    if ($id_reserva && $tipo && $peso) {
+        insertarPasajero($id_reserva, $tipo, $peso);
+    } else {
+        echo "Por favor, completa todos los campos.";
+    }
+}
+
 function actualizarEquipaje($id_equipaje, $tipo, $peso) {
     $conn = conectarDB();
     try {
@@ -55,6 +67,19 @@ function actualizarEquipaje($id_equipaje, $tipo, $peso) {
     }
 }
 
+// Procesar formulario de moficacion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'modificar') {
+    $id_equipaje = isset($_POST['id_equipaje']) ? $_POST['id_equipaje'] : null;
+    $tipo = isset($_POST['tipo']) ? $_POST['tipo'] : null;
+    $peso = isset($_POST['peso']) ? $_POST['peso'] : null;
+
+    if ($id_equipaje && ($tipo || $peso) {
+        actualizarPasajero($id_pasajero, $nombre, $apellido, $numero_pasaporte, $correo);
+    } else {
+        echo "Por favor, proporciona el ID del equipaje y al menos un campo para actualizar.";
+    }
+}
+
 function eliminarEquipaje($id_equipaje) {
     $conn = conectarDB();
     try {
@@ -78,9 +103,20 @@ function eliminarEquipaje($id_equipaje) {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'eliminar') {
+    $id_equipaje = isset($_POST['id_equipaje']) ? $_POST['id_equipaje'] : null;
+
+    if ($id_equipaje) {
+        eliminarPasajero($id_equipaje);
+    } else {
+        echo "Por favor, proporciona el ID del equipaje a eliminar.";
+    }
+}
+
 function listarEquipaje() {
     $conn = conectarDB();
-    $query = "SELECT id_equipaje, id_reserva, tipo, peso FROM equipaje";
+    try {
+        $query = "SELECT id_equipaje, id_reserva, tipo, peso FROM equipaje";
     $stmt = oci_parse($conn, $query);
     oci_execute($stmt);
 
@@ -94,7 +130,46 @@ function listarEquipaje() {
 
     return $equipaje;
 }
+function listarEquipaje() {
+    $conn = conectarDB();
+    try {
+        $query = "SELECT id_equipaje, id_reserva, tipo, peso FROM equipaje";
+        $stmt = oci_parse($conn, $query);
 
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception("Error al mostrar pasajeros: " . $error['message']);
+        }
+
+        echo "<table>";
+        echo "<thead>
+                <tr>
+                    <th>ID_EQUIPAJE</th>
+                    <th>ID_RESERVA</th>
+                    <th>TIPO</th>
+                    <th>PESO</th>
+                </tr>
+              </thead>";
+        echo "<tbody>";
+
+        while ($row = oci_fetch_assoc($stmt)) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($row['ID_EQUIPAJE']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['ID_RESERVA']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['TIPO']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['PESO']) . "</td>";
+            echo "</tr>";
+        }
+
+        echo "</tbody>";
+        echo "</table>";
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
+    } finally {
+        oci_free_statement($stmt);
+        oci_close($conn);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -173,6 +248,25 @@ function listarEquipaje() {
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
+        
+        .volver-boton {
+            position: fixed; /* Fija el botón en un lugar de la pantalla */
+            top: 20px; /* Distancia desde la parte superior */
+            right: 20px; /* Distancia desde el lado derecho */
+            padding: 10px 20px; /* Tamaño del botón */
+            background-color: #007BFF; /* Color del fondo */
+            color: white; /* Color del texto */
+            border: none; /* Sin bordes */
+            border-radius: 5px; /* Bordes redondeados */
+            cursor: pointer; /* Cambia el cursor a un puntero */
+            font-size: 16px; /* Tamaño del texto */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+        }
+
+        .volver-boton:hover {
+            background-color: #0056b3; /* Color más oscuro al pasar el mouse */
+        }
+        
     </style>
     <script>
         function showSection(id) {
@@ -185,125 +279,55 @@ function listarEquipaje() {
 <body>
     <header>
         <h1>Gestión de Equipaje</h1>
+        <section id="volver-index">
+            <button onclick="location.href='index.php'" class="volver-boton">Volver al Inicio</button>
+        </section>
     </header>
     <nav>
-        <button onclick="showSection('buscar')">Buscar Equipaje</button>
         <button onclick="showSection('listar')">Listar Equipaje</button>
         <button onclick="showSection('agregar')">Agregar Equipaje</button>
         <button onclick="showSection('modificar')">Modificar Equipaje</button>
         <button onclick="showSection('eliminar')">Eliminar Equipaje</button>
     </nav>
 
-    <!-- Buscar Equipaje -->
-    <section id="buscar" class="section">
-        <h2>Buscar Equipaje</h2>
-        <form method="POST" action="">
-            <input type="number" name="id_equipaje_buscar" placeholder="ID del Equipaje" required>
-            <input type="submit" value="Buscar">
-        </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_equipaje_buscar'])) {
-            $id_equipaje = $_POST['id_equipaje_buscar'];
-            $equipaje = buscarEquipaje($id_equipaje);
-            if ($equipaje) {
-                echo "<table>
-                        <tr>
-                            <th>ID</th>
-                            <th>ID Reserva</th>
-                            <th>Tipo</th>
-                            <th>Peso</th>
-                        </tr>
-                        <tr>
-                            <td>{$equipaje['id_equipaje']}</td>
-                            <td>{$equipaje['id_reserva']}</td>
-                            <td>{$equipaje['tipo']}</td>
-                            <td>{$equipaje['peso']}</td>
-                        </tr>
-                      </table>";
-            } else {
-                echo "<p>No se encontró el equipaje con ID {$id_equipaje}.</p>";
-            }
-        }
-        ?>
-    </section>
-
-    <!-- Listar Equipaje -->
-    <section id="listar" class="section">
-        <h2>Lista de Equipaje</h2>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>ID Reserva</th>
-                <th>Tipo</th>
-                <th>Peso</th>
-            </tr>
-            <?php
-            $equipaje = listarEquipaje();
-            foreach ($equipaje as $item): ?>
-            <tr>
-                <td><?php echo $item['id_equipaje']; ?></td>
-                <td><?php echo $item['id_reserva']; ?></td>
-                <td><?php echo $item['tipo']; ?></td>
-                <td><?php echo $item['peso']; ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    </section>
-
     <!-- Insertar Equipaje -->
     <section id="agregar" class="section">
         <h2>Agregar Nuevo Equipaje</h2>
         <form method="POST" action="">
+            <input type="hidden" name="accion" value="agregar">
             <input type="number" name="id_reserva" placeholder="ID de la Reserva" required>
             <input type="text" name="tipo" placeholder="Tipo de Equipaje (Ej: Maleta, Mochila, etc.)" required>
             <input type="number" name="peso" placeholder="Peso (kg)" required>
             <input type="submit" value="Agregar">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_reserva'], $_POST['tipo'], $_POST['peso'])) {
-            $id_reserva = $_POST['id_reserva'];
-            $tipo = $_POST['tipo'];
-            $peso = $_POST['peso'];
-            
-            insertarEquipaje($id_reserva, $tipo, $peso);
-        }
-        ?>
     </section>
 
     <!-- Modificar Equipaje -->
     <section id="modificar" class="section">
         <h2>Modificar Equipaje</h2>
         <form method="POST" action="">
+            <input type="hidden" name="accion" value="modificar">
             <input type="number" name="id_equipaje_modificar" placeholder="ID del Equipaje a Modificar" required>
             <input type="text" name="tipo" placeholder="Nuevo Tipo de Equipaje" required>
             <input type="number" name="peso" placeholder="Nuevo Peso (kg)" required>
             <input type="submit" value="Modificar">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_equipaje_modificar'])) {
-            $id_equipaje = $_POST['id_equipaje_modificar'];
-            $tipo = $_POST['tipo'];
-            $peso = $_POST['peso'];
-            
-            actualizarEquipaje($id_equipaje, $tipo, $peso);
-        }
-        ?>
     </section>
 
     <!-- Eliminar Equipaje -->
     <section id="eliminar" class="section">
         <h2>Eliminar Equipaje</h2>
         <form method="POST" action="">
+            <input type="hidden" name="accion" value="eliminar">
             <input type="number" name="id_equipaje_eliminar" placeholder="ID del Equipaje a Eliminar" required>
             <input type="submit" value="Eliminar">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_equipaje_eliminar'])) {
-            $id_equipaje = $_POST['id_equipaje_eliminar'];
-            
-            eliminarEquipaje($id_equipaje);
-        }
-        ?>
     </section>
+            
+    <section id="Mostrar" class="section">
+    <h2>Lista de Equipajes</h2>
+    <?php listarEquipaje(); ?>
+    </section>
+            
 </body>
 </html>
