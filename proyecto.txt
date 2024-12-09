@@ -1,0 +1,1382 @@
+--------------------------------------------------------
+-- Archivo creado  - miércoles-noviembre-27-2024   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Type CATALOG_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."CATALOG_TYP" 
+                                       
+ UNDER composite_category_typ 
+      ( 
+    MEMBER FUNCTION getCatalogName RETURN VARCHAR2 
+       , OVERRIDING MEMBER FUNCTION category_describe RETURN VARCHAR2 
+      ); 
+/
+CREATE OR REPLACE TYPE BODY "NIHC"."CATALOG_TYP" AS
+  OVERRIDING MEMBER FUNCTION category_describe RETURN varchar2 IS
+  BEGIN
+    RETURN 'catalog_typ';
+  END;
+  MEMBER FUNCTION getCatalogName RETURN varchar2 IS
+  BEGIN
+    -- Return the category name from the supertype
+    RETURN self.category_name;
+  END;
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Type CATEGORY_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."CATEGORY_TYP" 
+                                       
+ AS OBJECT 
+    ( category_name           VARCHAR2(50) 
+    , category_description    VARCHAR2(1000) 
+    , category_id             NUMBER(2) 
+    , NOT instantiable 
+      MEMBER FUNCTION category_describe RETURN VARCHAR2 
+      ) 
+  NOT INSTANTIABLE NOT FINAL
+ ALTER TYPE category_typ
+ ADD ATTRIBUTE (parent_category_id number(2)) CASCADE
+
+/
+--------------------------------------------------------
+--  DDL for Type COMPOSITE_CATEGORY_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."COMPOSITE_CATEGORY_TYP" 
+                                       
+ UNDER category_typ 
+      ( 
+    subcategory_ref_list subcategory_ref_list_typ 
+      , OVERRIDING MEMBER FUNCTION  category_describe RETURN VARCHAR2 
+      ) 
+  NOT FINAL; 
+/
+CREATE OR REPLACE TYPE BODY "NIHC"."COMPOSITE_CATEGORY_TYP" AS 
+    OVERRIDING MEMBER FUNCTION category_describe RETURN VARCHAR2 IS 
+    BEGIN 
+      RETURN 'composite_category_typ'; 
+    END; 
+   END; 
+
+/
+--------------------------------------------------------
+--  DDL for Type CORPORATE_CUSTOMER_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."CORPORATE_CUSTOMER_TYP" 
+                                       
+ UNDER customer_typ 
+      ( account_mgr_id     NUMBER(6) 
+      ); 
+
+/
+--------------------------------------------------------
+--  DDL for Type CUSTOMER_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."CUSTOMER_TYP" 
+ AS OBJECT
+    ( customer_id        NUMBER(6)
+    , cust_first_name    VARCHAR2(20)
+    , cust_last_name     VARCHAR2(20)
+    , cust_address       cust_address_typ
+    , phone_numbers      phone_list_typ
+    , nls_language       VARCHAR2(3)
+    , nls_territory      VARCHAR2(40)
+    , credit_limit       NUMBER(9,2)
+    , cust_email         VARCHAR2(40)
+    , cust_orders        order_list_typ
+    ) 
+NOT FINAL;
+
+/
+--------------------------------------------------------
+--  DDL for Type INVENTORY_LIST_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."INVENTORY_LIST_TYP" 
+                                       
+ AS TABLE OF inventory_typ;
+
+/
+--------------------------------------------------------
+--  DDL for Type INVENTORY_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."INVENTORY_TYP" 
+                                       
+ AS OBJECT
+    ( product_id          NUMBER(6) 
+    , warehouse           warehouse_typ
+    , quantity_on_hand    NUMBER(8)
+    ) ;
+
+/
+--------------------------------------------------------
+--  DDL for Type LEAF_CATEGORY_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."LEAF_CATEGORY_TYP" 
+                                       
+ UNDER category_typ 
+    ( 
+    product_ref_list    product_ref_list_typ 
+    , OVERRIDING MEMBER FUNCTION  category_describe RETURN VARCHAR2 
+    ); 
+/
+CREATE OR REPLACE TYPE BODY "NIHC"."LEAF_CATEGORY_TYP" AS 
+    OVERRIDING MEMBER FUNCTION  category_describe RETURN VARCHAR2 IS 
+    BEGIN 
+       RETURN  'leaf_category_typ'; 
+    END; 
+   END; 
+
+/
+--------------------------------------------------------
+--  DDL for Type ORDER_ITEM_LIST_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."ORDER_ITEM_LIST_TYP" 
+                                       
+ AS TABLE OF order_item_typ;
+
+/
+--------------------------------------------------------
+--  DDL for Type ORDER_ITEM_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."ORDER_ITEM_TYP" 
+                                       
+ AS OBJECT
+    ( order_id           NUMBER(12)
+    , line_item_id       NUMBER(3)
+    , unit_price         NUMBER(8,2)
+    , quantity           NUMBER(8)
+    , product_ref  REF   product_information_typ
+    ) ;
+
+/
+--------------------------------------------------------
+--  DDL for Type ORDER_LIST_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."ORDER_LIST_TYP" 
+                                       
+ AS TABLE OF order_typ;
+
+/
+--------------------------------------------------------
+--  DDL for Type ORDER_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."ORDER_TYP" 
+                                       
+ AS OBJECT
+    ( order_id           NUMBER(12)
+    , order_mode         VARCHAR2(8)
+    , customer_ref  REF  customer_typ
+    , order_status       NUMBER(2)
+    , order_total        NUMBER(8,2)
+    , sales_rep_id       NUMBER(6)
+    , order_item_list    order_item_list_typ
+    ) ;
+
+/
+--------------------------------------------------------
+--  DDL for Type PRODUCT_INFORMATION_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."PRODUCT_INFORMATION_TYP" 
+                                       
+ AS OBJECT
+    ( product_id           NUMBER(6)
+    , product_name         VARCHAR2(50)
+    , product_description  VARCHAR2(2000)
+    , category_id          NUMBER(2)
+    , weight_class         NUMBER(1)
+    , warranty_period      INTERVAL YEAR(2) TO MONTH
+    , supplier_id          NUMBER(6)
+    , product_status       VARCHAR2(20)
+    , list_price           NUMBER(8,2)
+    , min_price            NUMBER(8,2)
+    , catalog_url          VARCHAR2(50)
+    , inventory_list       inventory_list_typ
+    ) ;
+
+/
+--------------------------------------------------------
+--  DDL for Type PRODUCT_REF_LIST_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."PRODUCT_REF_LIST_TYP" 
+                                       
+ AS TABLE OF number(6); 
+
+/
+--------------------------------------------------------
+--  DDL for Type SUBCATEGORY_REF_LIST_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."SUBCATEGORY_REF_LIST_TYP" 
+                                       
+ AS TABLE OF REF category_typ; 
+
+/
+--------------------------------------------------------
+--  DDL for Type WAREHOUSE_TYP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TYPE "NIHC"."WAREHOUSE_TYP" 
+                                       
+ AS OBJECT
+    ( warehouse_id       NUMBER(3)
+    , warehouse_name     VARCHAR2(35)
+    , location_id        NUMBER(4)
+    ) ;
+
+/
+--------------------------------------------------------
+--  DDL for Sequence AVION_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "NIHC"."AVION_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence CHECKIN_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "NIHC"."CHECKIN_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence RESERVA_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "NIHC"."RESERVA_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence VUELO_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "NIHC"."VUELO_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Table ASIENTOS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."ASIENTOS" 
+   (	"ID_ASIENTO" NUMBER(*,0), 
+	"ID_VUELO" NUMBER(*,0), 
+	"NUMERO_ASIENTO" VARCHAR2(5 BYTE), 
+	"ESTADO" VARCHAR2(20 BYTE) DEFAULT 'Libre'
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table ASIGNAMIENTO
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."ASIGNAMIENTO" 
+   (	"ID_ASIGNAMIENTO" NUMBER(*,0), 
+	"ID_VUELO" NUMBER(*,0), 
+	"ID_PASAJERO" NUMBER(*,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table AVIONES
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."AVIONES" 
+   (	"ID_AVION" NUMBER, 
+	"MODELO" VARCHAR2(50 BYTE), 
+	"CAPACIDAD" NUMBER
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table CHECKIN
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."CHECKIN" 
+   (	"ID_CHECKIN" NUMBER(*,0), 
+	"ID_RESERVA" NUMBER(*,0), 
+	"FECHA_CHECKIN" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP, 
+	"ID_PUERTA" NUMBER(*,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table COMPRA
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."COMPRA" 
+   (	"CODIGO_COMPRA" NUMBER(*,0), 
+	"FECHA_COMPRA" DATE DEFAULT SYSDATE, 
+	"TOTAL" NUMBER(10,2)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table EQUIPAJE
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."EQUIPAJE" 
+   (	"ID_EQUIPAJE" NUMBER(*,0), 
+	"ID_RESERVA" NUMBER(*,0), 
+	"TIPO" VARCHAR2(50 BYTE), 
+	"PESO" NUMBER(5,2)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table LOGS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."LOGS" 
+   (	"ID_LOG" NUMBER(*,0), 
+	"USUARIO" VARCHAR2(50 BYTE), 
+	"ACCION" VARCHAR2(50 BYTE), 
+	"TABLA" VARCHAR2(50 BYTE), 
+	"FECHA" TIMESTAMP (6) DEFAULT CURRENT_TIMESTAMP, 
+	"DESCRIPCION" VARCHAR2(4000 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table PASAJEROS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."PASAJEROS" 
+   (	"ID_PASAJERO" NUMBER(*,0), 
+	"NOMBRE" VARCHAR2(50 BYTE), 
+	"APELLIDO" VARCHAR2(50 BYTE), 
+	"NUMERO_PASAPORTE" VARCHAR2(20 BYTE), 
+	"CORREO" VARCHAR2(100 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table PUERTAS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."PUERTAS" 
+   (	"ID_PUERTA" NUMBER(*,0), 
+	"NUMERO_PUERTA" VARCHAR2(5 BYTE), 
+	"ESTADO" VARCHAR2(10 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table RESERVAS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."RESERVAS" 
+   (	"ID_RESERVA" NUMBER(*,0), 
+	"ID_PASAJERO" NUMBER(*,0), 
+	"ID_VUELO" NUMBER(*,0), 
+	"NUMERO_ASIENTO" VARCHAR2(5 BYTE), 
+	"ESTADO" VARCHAR2(20 BYTE) DEFAULT 'Pendiente', 
+	"FECHA_RESERVA" DATE DEFAULT SYSDATE, 
+	"CODIGO_COMPRA" NUMBER(*,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table USUARIOS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."USUARIOS" 
+   (	"ID_USUARIO" NUMBER(*,0), 
+	"NOMBRE" VARCHAR2(50 BYTE), 
+	"CORREO" VARCHAR2(100 BYTE), 
+	"CONTRASEÑA" VARCHAR2(100 BYTE), 
+	"ROL" VARCHAR2(20 BYTE)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table VUELOS
+--------------------------------------------------------
+
+  CREATE TABLE "NIHC"."VUELOS" 
+   (	"ID_VUELO" NUMBER(*,0), 
+	"NUMERO_VUELO" VARCHAR2(10 BYTE), 
+	"CIUDAD_ORIGEN" VARCHAR2(100 BYTE), 
+	"CIUDAD_DESTINO" VARCHAR2(100 BYTE), 
+	"HORA_SALIDA" TIMESTAMP (6), 
+	"HORA_LLEGADA" TIMESTAMP (6), 
+	"ESTADO" VARCHAR2(20 BYTE) DEFAULT 'Programado', 
+	"ID_AVION" NUMBER(*,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for View EQUIPAJE_DETALLADO
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."EQUIPAJE_DETALLADO" ("ID_RESERVA", "PASAJERO", "TIPO", "PESO") AS 
+  SELECT 
+    r.id_reserva,
+    p.nombre || ' ' || p.apellido AS pasajero,
+    e.tipo,
+    e.peso
+FROM equipaje e
+JOIN reservas r ON e.id_reserva = r.id_reserva
+JOIN pasajeros p ON r.id_pasajero = p.id_pasajero
+;
+--------------------------------------------------------
+--  DDL for View OCUPACION_VUELOS
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."OCUPACION_VUELOS" ("NUMERO_VUELO", "ASIENTOS_RESERVADOS", "ASIENTOS_OCUPADOS", "ASIENTOS_LIBRES") AS 
+  SELECT 
+    v.numero_vuelo,
+    COUNT(CASE WHEN a.estado = 'Reservado' THEN 1 END) AS asientos_reservados,
+    COUNT(CASE WHEN a.estado = 'Ocupado' THEN 1 END) AS asientos_ocupados,
+    COUNT(CASE WHEN a.estado = 'Libre' THEN 1 END) AS asientos_libres
+FROM vuelos v
+JOIN asientos a ON v.id_vuelo = a.id_vuelo
+GROUP BY v.numero_vuelo
+;
+--------------------------------------------------------
+--  DDL for View RESUMEN_VUELOS
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."RESUMEN_VUELOS" ("ID_VUELO", "NUMERO_VUELO", "CIUDAD_ORIGEN", "CIUDAD_DESTINO", "HORA_SALIDA", "HORA_LLEGADA", "ESTADO", "CAPACIDAD_TOTAL", "PASAJEROS_ASIGNADOS", "ASIENTOS_DISPONIBLES") AS 
+  SELECT
+    v.id_vuelo,
+    v.numero_vuelo,
+    v.ciudad_origen,
+    v.ciudad_destino,
+    v.hora_salida,
+    v.hora_llegada,
+    v.estado,
+    a.capacidad AS capacidad_total,
+    (SELECT COUNT(*) FROM asignamiento WHERE id_vuelo = v.id_vuelo) AS pasajeros_asignados,
+    (a.capacidad - (SELECT COUNT(*) FROM asignamiento WHERE id_vuelo = v.id_vuelo)) AS asientos_disponibles
+FROM
+    vuelos v
+JOIN
+    aviones a ON v.id_avion = a.id_avion
+;
+--------------------------------------------------------
+--  DDL for View RESUMEN_VUELOS_CLIENTE
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."RESUMEN_VUELOS_CLIENTE" ("NUMERO_VUELO", "CIUDAD_ORIGEN", "CIUDAD_DESTINO", "HORA_SALIDA", "HORA_LLEGADA") AS 
+  SELECT numero_vuelo, ciudad_origen, ciudad_destino, hora_salida, hora_llegada
+FROM vuelos
+WHERE estado != 'Cancelado'
+;
+--------------------------------------------------------
+--  DDL for View VISTA_CAPACIDAD_VUELO
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."VISTA_CAPACIDAD_VUELO" ("ID_VUELO", "NUMERO_VUELO", "ASIENTOS_RESERVADOS", "ASIENTOS_OCUPADOS", "ASIENTOS_LIBRES") AS 
+  SELECT 
+    v.id_vuelo,
+    v.numero_vuelo,
+    COUNT(CASE WHEN a.estado = 'Reservado' THEN 1 END) AS asientos_reservados,
+    COUNT(CASE WHEN a.estado = 'Ocupado' THEN 1 END) AS asientos_ocupados,
+    COUNT(CASE WHEN a.estado = 'Libre' THEN 1 END) AS asientos_libres
+FROM vuelos v
+JOIN asientos a ON v.id_vuelo = a.id_vuelo
+GROUP BY v.id_vuelo, v.numero_vuelo
+;
+--------------------------------------------------------
+--  DDL for View VISTA_CHECKIN_REPORT
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."VISTA_CHECKIN_REPORT" ("ID_RESERVA", "NOMBRE_PASAJERO", "APELLIDO_PASAJERO", "NUMERO_VUELO", "FECHA_CHECKIN", "NUMERO_PUERTA") AS 
+  SELECT 
+    r.id_reserva,
+    p.nombre AS nombre_pasajero,
+    p.apellido AS apellido_pasajero,
+    v.numero_vuelo,
+    c.fecha_checkin,
+    pt.numero_puerta
+FROM reservas r
+JOIN pasajeros p ON r.id_pasajero = p.id_pasajero
+JOIN vuelos v ON r.id_vuelo = v.id_vuelo
+LEFT JOIN checkin c ON r.id_reserva = c.id_reserva
+LEFT JOIN puertas pt ON c.id_puerta = pt.id_puerta
+;
+--------------------------------------------------------
+--  DDL for View VISTA_EQUIPAJE_PASAJERO
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "NIHC"."VISTA_EQUIPAJE_PASAJERO" ("NOMBRE_COMPLETO", "ID_RESERVA", "TIPO", "PESO") AS 
+  SELECT 
+    p.nombre || ' ' || p.apellido AS nombre_completo,
+    r.id_reserva,
+    e.tipo,
+    e.peso
+FROM equipaje e
+JOIN reservas r ON e.id_reserva = r.id_reserva
+JOIN pasajeros p ON r.id_pasajero = p.id_pasajero
+;
+REM INSERTING into NIHC.ASIENTOS
+SET DEFINE OFF;
+REM INSERTING into NIHC.ASIGNAMIENTO
+SET DEFINE OFF;
+REM INSERTING into NIHC.AVIONES
+SET DEFINE OFF;
+Insert into NIHC.AVIONES (ID_AVION,MODELO,CAPACIDAD) values ('1','Boeing 737','180');
+Insert into NIHC.AVIONES (ID_AVION,MODELO,CAPACIDAD) values ('2','Airbus A320','200');
+REM INSERTING into NIHC.CHECKIN
+SET DEFINE OFF;
+Insert into NIHC.CHECKIN (ID_CHECKIN,ID_RESERVA,FECHA_CHECKIN,ID_PUERTA) values ('3','3',to_timestamp('26/10/24 01:33:55,482000000','DD/MM/RR HH24:MI:SSXFF'),'3');
+Insert into NIHC.CHECKIN (ID_CHECKIN,ID_RESERVA,FECHA_CHECKIN,ID_PUERTA) values ('5','4',to_timestamp('26/10/24 01:38:20,624000000','DD/MM/RR HH24:MI:SSXFF'),'4');
+REM INSERTING into NIHC.COMPRA
+SET DEFINE OFF;
+REM INSERTING into NIHC.EQUIPAJE
+SET DEFINE OFF;
+REM INSERTING into NIHC.LOGS
+SET DEFINE OFF;
+REM INSERTING into NIHC.PASAJEROS
+SET DEFINE OFF;
+Insert into NIHC.PASAJEROS (ID_PASAJERO,NOMBRE,APELLIDO,NUMERO_PASAPORTE,CORREO) values ('1','Juan','Pérez','AB123456','juan.perez@example.com');
+REM INSERTING into NIHC.PUERTAS
+SET DEFINE OFF;
+Insert into NIHC.PUERTAS (ID_PUERTA,NUMERO_PUERTA,ESTADO) values ('3','P3','Libre');
+Insert into NIHC.PUERTAS (ID_PUERTA,NUMERO_PUERTA,ESTADO) values ('4','P4','Libre');
+REM INSERTING into NIHC.RESERVAS
+SET DEFINE OFF;
+Insert into NIHC.RESERVAS (ID_RESERVA,ID_PASAJERO,ID_VUELO,NUMERO_ASIENTO,ESTADO,FECHA_RESERVA,CODIGO_COMPRA) values ('2','1','2','12A','Confirmado',to_date('26/10/24','DD/MM/RR'),null);
+Insert into NIHC.RESERVAS (ID_RESERVA,ID_PASAJERO,ID_VUELO,NUMERO_ASIENTO,ESTADO,FECHA_RESERVA,CODIGO_COMPRA) values ('1','1','2','12B','Confirmado',to_date('26/10/24','DD/MM/RR'),null);
+Insert into NIHC.RESERVAS (ID_RESERVA,ID_PASAJERO,ID_VUELO,NUMERO_ASIENTO,ESTADO,FECHA_RESERVA,CODIGO_COMPRA) values ('3','1','2','12C','Confirmado',to_date('26/10/24','DD/MM/RR'),null);
+Insert into NIHC.RESERVAS (ID_RESERVA,ID_PASAJERO,ID_VUELO,NUMERO_ASIENTO,ESTADO,FECHA_RESERVA,CODIGO_COMPRA) values ('4','1','2','12D','Confirmado',to_date('26/10/24','DD/MM/RR'),null);
+REM INSERTING into NIHC.USUARIOS
+SET DEFINE OFF;
+REM INSERTING into NIHC.VUELOS
+SET DEFINE OFF;
+Insert into NIHC.VUELOS (ID_VUELO,NUMERO_VUELO,CIUDAD_ORIGEN,CIUDAD_DESTINO,HORA_SALIDA,HORA_LLEGADA,ESTADO,ID_AVION) values ('2','LAN456','Santiago','Lima',to_timestamp('25/10/24 10:00:00,000000000','DD/MM/RR HH24:MI:SSXFF'),to_timestamp('25/10/24 12:30:00,000000000','DD/MM/RR HH24:MI:SSXFF'),'Programado','1');
+Insert into NIHC.VUELOS (ID_VUELO,NUMERO_VUELO,CIUDAD_ORIGEN,CIUDAD_DESTINO,HORA_SALIDA,HORA_LLEGADA,ESTADO,ID_AVION) values ('3','LAN789','Santiago','Buenos Aires',to_timestamp('26/10/24 08:00:00,000000000','DD/MM/RR HH24:MI:SSXFF'),to_timestamp('26/10/24 12:30:00,000000000','DD/MM/RR HH24:MI:SSXFF'),'Programado','1');
+--------------------------------------------------------
+--  DDL for Index IDX_RESERVAS_ESTADO_FECHA
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_RESERVAS_ESTADO_FECHA" ON "NIHC"."RESERVAS" ("ESTADO", "FECHA_RESERVA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_ID_VUELO_ASIENTOS
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_ID_VUELO_ASIENTOS" ON "NIHC"."ASIENTOS" ("ID_VUELO") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_ESTADO_VUELO
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_ESTADO_VUELO" ON "NIHC"."VUELOS" ("ESTADO") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_ESTADO_RESERVA
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_ESTADO_RESERVA" ON "NIHC"."RESERVAS" ("ESTADO") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index UQ_ASIENTO
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "NIHC"."UQ_ASIENTO" ON "NIHC"."RESERVAS" ("ID_VUELO", "NUMERO_ASIENTO") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_VUELOS_HORA_SALIDA
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_VUELOS_HORA_SALIDA" ON "NIHC"."VUELOS" ("HORA_SALIDA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_CHECKIN_RESERVA_PUERTA
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_CHECKIN_RESERVA_PUERTA" ON "NIHC"."CHECKIN" ("ID_RESERVA", "ID_PUERTA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index IDX_ID_RESERVA_CHECKIN
+--------------------------------------------------------
+
+  CREATE INDEX "NIHC"."IDX_ID_RESERVA_CHECKIN" ON "NIHC"."CHECKIN" ("ID_RESERVA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Trigger ACTUALIZAR_ESTADO_VUELO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."ACTUALIZAR_ESTADO_VUELO" 
+AFTER UPDATE ON vuelos
+FOR EACH ROW
+BEGIN
+    -- Cambiar estado a 'Demorado' si la hora de salida cambia
+    IF :NEW.hora_salida != :OLD.hora_salida THEN
+        UPDATE vuelos
+        SET estado = 'Demorado'
+        WHERE id_vuelo = :NEW.id_vuelo;
+    END IF;
+
+    -- Cambiar estado a 'Reprogramado' si cambia el destino
+    IF :NEW.ciudad_destino != :OLD.ciudad_destino THEN
+        UPDATE vuelos
+        SET estado = 'Reprogramado'
+        WHERE id_vuelo = :NEW.id_vuelo;
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."ACTUALIZAR_ESTADO_VUELO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger AVION_ID_TRIGGER
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."AVION_ID_TRIGGER" 
+BEFORE INSERT ON aviones
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_avion IS NULL THEN
+        SELECT avion_seq.NEXTVAL INTO :NEW.id_avion FROM DUAL;
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."AVION_ID_TRIGGER" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger CHECKIN_ID_TRIGGER
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."CHECKIN_ID_TRIGGER" 
+BEFORE INSERT ON checkin
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_checkin IS NULL THEN
+        SELECT checkin_seq.NEXTVAL INTO :NEW.id_checkin FROM DUAL;
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."CHECKIN_ID_TRIGGER" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger LOG_RESERVAS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."LOG_RESERVAS" 
+AFTER INSERT OR UPDATE OR DELETE ON reservas
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (usuario, accion, tabla, descripcion)
+    VALUES (USER, 'Operación en reservas', 'reservas',
+            'ID reserva: ' || NVL(:NEW.id_reserva, :OLD.id_reserva));
+END;
+
+/
+ALTER TRIGGER "NIHC"."LOG_RESERVAS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger LOG_VUELOS
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."LOG_VUELOS" 
+AFTER INSERT OR UPDATE OR DELETE ON vuelos
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (usuario, accion, tabla, descripcion)
+    VALUES (USER, 'Operación en vuelos', 'vuelos',
+            'Número de vuelo: ' || NVL(:NEW.numero_vuelo, :OLD.numero_vuelo));
+END;
+
+/
+ALTER TRIGGER "NIHC"."LOG_VUELOS" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger RESERVA_ID_TRIGGER
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."RESERVA_ID_TRIGGER" 
+BEFORE INSERT ON reservas
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_reserva IS NULL THEN
+        SELECT reserva_seq.NEXTVAL INTO :NEW.id_reserva FROM DUAL;
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."RESERVA_ID_TRIGGER" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_CAPACIDAD_RESERVA
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_CAPACIDAD_RESERVA" 
+BEFORE INSERT OR UPDATE ON reservas
+FOR EACH ROW
+DECLARE
+    asientos_reservados INT;
+    capacidad_avion INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO asientos_reservados
+    FROM reservas
+    WHERE id_vuelo = :NEW.id_vuelo;
+
+    SELECT capacidad
+    INTO capacidad_avion
+    FROM aviones a
+    JOIN vuelos v ON a.id_avion = v.id_avion
+    WHERE v.id_vuelo = :NEW.id_vuelo;
+
+    IF asientos_reservados >= capacidad_avion THEN
+        RAISE_APPLICATION_ERROR(-20021, 'La capacidad del avión ya está cubierta.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_CAPACIDAD_RESERVA" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_DISPONIBILIDAD_PUERTA
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_DISPONIBILIDAD_PUERTA" 
+BEFORE INSERT OR UPDATE ON checkin
+FOR EACH ROW
+DECLARE
+    v_estado VARCHAR2(10);
+BEGIN
+    SELECT estado INTO v_estado
+    FROM puertas
+    WHERE id_puerta = :NEW.id_puerta;
+
+    IF v_estado != 'Libre' THEN
+        RAISE_APPLICATION_ERROR(-20008, 'La puerta seleccionada no está disponible.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_DISPONIBILIDAD_PUERTA" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_ESTADO_RESERVA
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_ESTADO_RESERVA" 
+BEFORE INSERT ON checkin
+FOR EACH ROW
+DECLARE
+    v_estado VARCHAR2(20);
+BEGIN
+    -- Intentar consultar el estado de la reserva
+    BEGIN
+        SELECT estado INTO v_estado 
+        FROM reservas 
+        WHERE id_reserva = :NEW.id_reserva;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20004, 'No existe una reserva con este ID.');
+    END;
+
+    -- Validar que el estado sea 'Confirmado'
+    IF v_estado != 'Confirmado' THEN
+        RAISE_APPLICATION_ERROR(-20003, 'No se puede hacer check-in en una reserva no confirmada.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_ESTADO_RESERVA" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_HORAS_VUELO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_HORAS_VUELO" 
+BEFORE INSERT OR UPDATE ON vuelos
+FOR EACH ROW
+BEGIN
+    IF :NEW.hora_llegada <= :NEW.hora_salida THEN
+        RAISE_APPLICATION_ERROR(-20020, 'La hora de llegada debe ser posterior a la hora de salida.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_HORAS_VUELO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_PAGO_RESERVA
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_PAGO_RESERVA" 
+BEFORE INSERT ON checkin
+FOR EACH ROW
+DECLARE
+    codigo_pago INT;
+BEGIN
+    SELECT codigo_compra INTO codigo_pago 
+    FROM reservas 
+    WHERE id_reserva = :NEW.id_reserva;
+
+    IF codigo_pago IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20007, 'No se puede hacer check-in sin haber realizado el pago.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_PAGO_RESERVA" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_PESO_EQUIPAJE
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_PESO_EQUIPAJE" 
+BEFORE INSERT ON equipaje
+FOR EACH ROW
+BEGIN
+    IF :NEW.peso > 50 THEN -- Peso máximo permitido, ajustable según reglas.
+        RAISE_APPLICATION_ERROR(-20012, 'El peso del equipaje excede el límite permitido.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_PESO_EQUIPAJE" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_PUERTA_CHECKIN
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_PUERTA_CHECKIN" 
+BEFORE INSERT OR UPDATE ON checkin
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_puerta IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20007, 'Cada check-in debe tener asociada una puerta válida.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_PUERTA_CHECKIN" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VALIDAR_RESERVA_CHECKIN
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VALIDAR_RESERVA_CHECKIN" 
+BEFORE INSERT ON checkin
+FOR EACH ROW
+DECLARE
+    v_estado VARCHAR2(20);
+BEGIN
+    SELECT estado INTO v_estado
+    FROM reservas
+    WHERE id_reserva = :NEW.id_reserva;
+
+    IF v_estado != 'Confirmado' THEN
+        RAISE_APPLICATION_ERROR(-20009, 'Solo las reservas confirmadas pueden usarse en check-in.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VALIDAR_RESERVA_CHECKIN" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VERIFICAR_CAPACIDAD
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VERIFICAR_CAPACIDAD" 
+BEFORE INSERT ON asignamiento
+FOR EACH ROW
+BEGIN
+    IF vuelo_esta_lleno(:NEW.id_vuelo) = 'SI' THEN
+        RAISE_APPLICATION_ERROR(-20005, 'El vuelo ya está lleno.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VERIFICAR_CAPACIDAD" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VERIFICAR_UNICIDAD_ASIENTO
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VERIFICAR_UNICIDAD_ASIENTO" 
+BEFORE INSERT ON reservas
+FOR EACH ROW
+DECLARE
+    cantidad_asientos INT;
+BEGIN
+    SELECT COUNT(*) INTO cantidad_asientos
+    FROM reservas
+    WHERE id_pasajero = :NEW.id_pasajero AND id_vuelo = :NEW.id_vuelo;
+
+    IF cantidad_asientos > 0 THEN
+        RAISE_APPLICATION_ERROR(-20006, 'El pasajero ya tiene un asiento asignado en este vuelo.');
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VERIFICAR_UNICIDAD_ASIENTO" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger VUELO_ID_TRIGGER
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "NIHC"."VUELO_ID_TRIGGER" 
+BEFORE INSERT ON vuelos
+FOR EACH ROW
+BEGIN
+    IF :NEW.id_vuelo IS NULL THEN
+        SELECT vuelo_seq.NEXTVAL INTO :NEW.id_vuelo FROM DUAL;
+    END IF;
+END;
+
+/
+ALTER TRIGGER "NIHC"."VUELO_ID_TRIGGER" ENABLE;
+--------------------------------------------------------
+--  DDL for Procedure ACTUALIZAR_ESTADO_VUELO
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "NIHC"."ACTUALIZAR_ESTADO_VUELO" (
+    p_id_vuelo INT,
+    p_nuevo_estado VARCHAR2
+)
+AS
+BEGIN
+    UPDATE vuelos
+    SET estado = p_nuevo_estado
+    WHERE id_vuelo = p_id_vuelo;
+
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20013, 'Error al actualizar el estado del vuelo.');
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERTAR_CHECKIN
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "NIHC"."INSERTAR_CHECKIN" (p_id_reserva INT, p_id_puerta INT) 
+AS
+    v_estado VARCHAR2(20);         -- Variable para almacenar el estado de la reserva
+    v_codigo_compra INT;           -- Variable para verificar el pago
+    v_estado_puerta VARCHAR2(10);   -- Variable para almacenar el estado de la puerta
+    v_dummy INT;                   -- Variable temporal para la verificación de duplicados
+BEGIN
+    -- Validación del estado de la reserva
+    SELECT estado, codigo_compra INTO v_estado, v_codigo_compra
+    FROM reservas 
+    WHERE id_reserva = p_id_reserva;
+
+    -- Validar que la reserva esté confirmada
+    IF v_estado != 'Confirmado' THEN
+        RAISE_APPLICATION_ERROR(-20001, 'La reserva no está confirmada.');
+    END IF;
+
+    -- Verificación de pago
+    IF v_codigo_compra IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20003, 'No se puede hacer check-in sin haber realizado el pago.');
+    END IF;
+
+    -- Verificar que no exista un check-in duplicado para la misma reserva
+    BEGIN
+        SELECT 1 INTO v_dummy FROM checkin WHERE id_reserva = p_id_reserva;
+        RAISE_APPLICATION_ERROR(-20004, 'El check-in ya ha sido realizado para esta reserva.');
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            NULL; -- No se encontró un check-in existente, por lo que se permite continuar
+    END;
+
+    -- Validación de la disponibilidad de la puerta
+    SELECT estado INTO v_estado_puerta FROM puertas WHERE id_puerta = p_id_puerta;
+    IF v_estado_puerta != 'Libre' THEN
+        RAISE_APPLICATION_ERROR(-20005, 'La puerta de embarque no está disponible.');
+    END IF;
+
+    -- Actualizar el estado de la puerta a "Ocupada"
+    UPDATE puertas SET estado = 'Ocupada' WHERE id_puerta = p_id_puerta;
+
+    -- Insertar el registro de check-in
+    INSERT INTO checkin (id_reserva, id_puerta) 
+    VALUES (p_id_reserva, p_id_puerta);
+
+    -- Confirmar la transacción
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Revertir en caso de error
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20002, 'Error al realizar el check-in.');
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure PA_CONSULTAR_VUELOS
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "NIHC"."PA_CONSULTAR_VUELOS" (
+    p_numero_vuelo IN vuelos.numero_vuelo%TYPE,
+    p_id_vuelo OUT vuelos.id_vuelo%TYPE,
+    p_ciudad_origen OUT vuelos.ciudad_origen%TYPE,
+    p_ciudad_destino OUT vuelos.ciudad_destino%TYPE
+) AS
+BEGIN
+    SELECT id_vuelo, ciudad_origen, ciudad_destino
+    INTO p_id_vuelo, p_ciudad_origen, p_ciudad_destino
+    FROM vuelos
+    WHERE numero_vuelo = p_numero_vuelo;
+
+    -- Para depuración
+    DBMS_OUTPUT.PUT_LINE('ID Vuelo: ' || p_id_vuelo || ', Origen: ' || p_ciudad_origen || ', Destino: ' || p_ciudad_destino);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20001, 'No se encontró el vuelo con el número proporcionado.');
+END;
+
+/
+
+  GRANT EXECUTE ON "NIHC"."PA_CONSULTAR_VUELOS" TO "CLIENT_ROLE";
+--------------------------------------------------------
+--  DDL for Procedure REGISTRAR_EQUIPAJE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "NIHC"."REGISTRAR_EQUIPAJE" (
+    p_id_reserva INT,
+    p_tipo VARCHAR2,
+    p_peso DECIMAL
+) 
+AS
+    v_estado VARCHAR2(20);  -- Variable para almacenar el estado de la reserva
+BEGIN
+    -- Consultar el estado de la reserva
+    SELECT estado
+    INTO v_estado
+    FROM reservas
+    WHERE id_reserva = p_id_reserva;
+
+    -- Validar que la reserva esté confirmada
+    IF v_estado != 'Confirmado' THEN
+        RAISE_APPLICATION_ERROR(-20001, 'El equipaje solo se puede registrar para reservas confirmadas.');
+    END IF;
+
+    -- Insertar el registro del equipaje
+    INSERT INTO equipaje (id_reserva, tipo, peso)
+    VALUES (p_id_reserva, p_tipo, p_peso);
+
+    -- Confirmar la transacción
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20002, 'No existe una reserva con el ID proporcionado.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20003, 'Ocurrió un error al registrar el equipaje.');
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure VALIDAR_ASIENTO_DISPONIBLE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "NIHC"."VALIDAR_ASIENTO_DISPONIBLE" (p_id_vuelo INT, p_numero_asiento VARCHAR2) 
+AS
+    v_estado VARCHAR2(20);
+BEGIN
+    SELECT estado INTO v_estado
+    FROM asientos
+    WHERE id_vuelo = p_id_vuelo AND numero_asiento = p_numero_asiento;
+
+    IF v_estado != 'Libre' THEN
+        RAISE_APPLICATION_ERROR(-20010, 'El asiento seleccionado no está disponible.');
+    END IF;
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Function CALCULAR_CAPACIDAD_RESTANTE
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "NIHC"."CALCULAR_CAPACIDAD_RESTANTE" (p_id_vuelo INT)
+RETURN INT IS
+    capacidad_max INT;
+    ocupados INT;
+BEGIN
+    SELECT capacidad INTO capacidad_max
+    FROM aviones a
+    JOIN vuelos v ON a.id_avion = v.id_avion
+    WHERE v.id_vuelo = p_id_vuelo;
+
+    SELECT COUNT(*) INTO ocupados
+    FROM asientos
+    WHERE id_vuelo = p_id_vuelo AND estado = 'Ocupado';
+
+    RETURN capacidad_max - ocupados;
+END;
+
+/
+--------------------------------------------------------
+--  DDL for Function VUELO_ESTA_LLENO
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "NIHC"."VUELO_ESTA_LLENO" (p_id_vuelo INT)
+RETURN VARCHAR2 IS
+    capacidad_restante INT;
+BEGIN
+    capacidad_restante := calcular_capacidad_restante(p_id_vuelo);
+    IF capacidad_restante <= 0 THEN
+        RETURN 'SI';
+    ELSE
+        RETURN 'NO';
+    END IF;
+END;
+
+/
+--------------------------------------------------------
+--  Constraints for Table USUARIOS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."USUARIOS" ADD UNIQUE ("CORREO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."USUARIOS" ADD PRIMARY KEY ("ID_USUARIO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."USUARIOS" ADD CHECK (rol IN ('Cliente', 'Empleado', 'Administrador')) ENABLE;
+  ALTER TABLE "NIHC"."USUARIOS" MODIFY ("CONTRASEÑA" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."USUARIOS" MODIFY ("CORREO" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."USUARIOS" MODIFY ("NOMBRE" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table VUELOS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."VUELOS" ADD UNIQUE ("NUMERO_VUELO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."VUELOS" ADD PRIMARY KEY ("ID_VUELO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."VUELOS" ADD CHECK (estado IN ('Programado', 'Cancelado', 'Demorado', 'En Embarque')) ENABLE;
+  ALTER TABLE "NIHC"."VUELOS" MODIFY ("HORA_LLEGADA" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."VUELOS" MODIFY ("HORA_SALIDA" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."VUELOS" MODIFY ("CIUDAD_DESTINO" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."VUELOS" MODIFY ("CIUDAD_ORIGEN" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."VUELOS" MODIFY ("NUMERO_VUELO" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ASIENTOS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."ASIENTOS" ADD PRIMARY KEY ("ID_ASIENTO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."ASIENTOS" ADD CHECK (estado IN ('Libre', 'Reservado', 'Ocupado')) ENABLE;
+  ALTER TABLE "NIHC"."ASIENTOS" MODIFY ("NUMERO_ASIENTO" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ASIGNAMIENTO
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."ASIGNAMIENTO" ADD PRIMARY KEY ("ID_ASIGNAMIENTO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table AVIONES
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."AVIONES" ADD PRIMARY KEY ("ID_AVION")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."AVIONES" ADD CHECK (capacidad > 0) ENABLE;
+  ALTER TABLE "NIHC"."AVIONES" MODIFY ("CAPACIDAD" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."AVIONES" MODIFY ("MODELO" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table PASAJEROS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."PASAJEROS" ADD UNIQUE ("CORREO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."PASAJEROS" ADD UNIQUE ("NUMERO_PASAPORTE")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."PASAJEROS" ADD PRIMARY KEY ("ID_PASAJERO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."PASAJEROS" MODIFY ("NUMERO_PASAPORTE" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."PASAJEROS" MODIFY ("APELLIDO" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."PASAJEROS" MODIFY ("NOMBRE" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table RESERVAS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."RESERVAS" ADD PRIMARY KEY ("ID_RESERVA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."RESERVAS" ADD CHECK (estado IN ('Pendiente', 'Confirmado', 'Cancelado')) ENABLE;
+  ALTER TABLE "NIHC"."RESERVAS" MODIFY ("NUMERO_ASIENTO" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."RESERVAS" ADD CONSTRAINT "UQ_ASIENTO" UNIQUE ("ID_VUELO", "NUMERO_ASIENTO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table EQUIPAJE
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."EQUIPAJE" ADD PRIMARY KEY ("ID_EQUIPAJE")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."EQUIPAJE" ADD CHECK (peso > 0) ENABLE;
+  ALTER TABLE "NIHC"."EQUIPAJE" MODIFY ("PESO" NOT NULL ENABLE);
+  ALTER TABLE "NIHC"."EQUIPAJE" MODIFY ("TIPO" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table LOGS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."LOGS" ADD PRIMARY KEY ("ID_LOG")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table CHECKIN
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."CHECKIN" ADD PRIMARY KEY ("ID_CHECKIN")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table COMPRA
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."COMPRA" ADD PRIMARY KEY ("CODIGO_COMPRA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."COMPRA" MODIFY ("TOTAL" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table PUERTAS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."PUERTAS" ADD UNIQUE ("NUMERO_PUERTA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."PUERTAS" ADD PRIMARY KEY ("ID_PUERTA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "NIHC"."PUERTAS" ADD CHECK (estado IN ('Libre', 'Ocupada')) ENABLE;
+  ALTER TABLE "NIHC"."PUERTAS" MODIFY ("NUMERO_PUERTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table ASIENTOS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."ASIENTOS" ADD FOREIGN KEY ("ID_VUELO")
+	  REFERENCES "NIHC"."VUELOS" ("ID_VUELO") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ASIGNAMIENTO
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."ASIGNAMIENTO" ADD FOREIGN KEY ("ID_VUELO")
+	  REFERENCES "NIHC"."VUELOS" ("ID_VUELO") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "NIHC"."ASIGNAMIENTO" ADD FOREIGN KEY ("ID_PASAJERO")
+	  REFERENCES "NIHC"."PASAJEROS" ("ID_PASAJERO") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table CHECKIN
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."CHECKIN" ADD FOREIGN KEY ("ID_RESERVA")
+	  REFERENCES "NIHC"."RESERVAS" ("ID_RESERVA") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "NIHC"."CHECKIN" ADD FOREIGN KEY ("ID_PUERTA")
+	  REFERENCES "NIHC"."PUERTAS" ("ID_PUERTA") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table EQUIPAJE
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."EQUIPAJE" ADD FOREIGN KEY ("ID_RESERVA")
+	  REFERENCES "NIHC"."RESERVAS" ("ID_RESERVA") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table RESERVAS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."RESERVAS" ADD CONSTRAINT "FK_RESERVAS_COMPRA" FOREIGN KEY ("CODIGO_COMPRA")
+	  REFERENCES "NIHC"."COMPRA" ("CODIGO_COMPRA") ON DELETE SET NULL ENABLE;
+  ALTER TABLE "NIHC"."RESERVAS" ADD FOREIGN KEY ("ID_PASAJERO")
+	  REFERENCES "NIHC"."PASAJEROS" ("ID_PASAJERO") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "NIHC"."RESERVAS" ADD FOREIGN KEY ("ID_VUELO")
+	  REFERENCES "NIHC"."VUELOS" ("ID_VUELO") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table VUELOS
+--------------------------------------------------------
+
+  ALTER TABLE "NIHC"."VUELOS" ADD CONSTRAINT "FK_VUELO_AVION" FOREIGN KEY ("ID_AVION")
+	  REFERENCES "NIHC"."AVIONES" ("ID_AVION") ON DELETE CASCADE ENABLE;
